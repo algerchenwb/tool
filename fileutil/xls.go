@@ -2,11 +2,13 @@ package fileutil
 
 import (
 	"fmt"
-	xls "github.com/extrame/xls"
-	"github.com/tealeg/xlsx"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/shakinm/xlsReader/xls"
+	"github.com/shakinm/xlsReader/xls/structure"
+	"github.com/tealeg/xlsx"
 )
 
 func Example(fromXlsPath string, toXlsxPath string) {
@@ -27,14 +29,14 @@ func Example(fromXlsPath string, toXlsxPath string) {
 			}
 		}
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 	err = deleteFun()
 	if err != nil {
 		fmt.Printf("err is %v", err)
 		return
 	}
-}
 
+}
 func Xls2Xlsx(fromXlsPath string, toXlsxPath string) (*xlsx.File, func() error, error) { // 打開xls文件
 	defer func() {
 		if err := recover(); err != nil {
@@ -75,7 +77,7 @@ func Xls2Xlsx(fromXlsPath string, toXlsxPath string) (*xlsx.File, func() error, 
 	return toXlsxFile, deleteFun, nil
 }
 
-func openXlsFile(fromXlsPath string) (*xls.WorkSheet, error) {
+func openXlsFile(fromXlsPath string) (*xls.Sheet, error) {
 	// xls文件存在
 	if !IsFile(fromXlsPath) {
 		return nil, fmt.Errorf("file %s not found", fromXlsPath)
@@ -87,28 +89,32 @@ func openXlsFile(fromXlsPath string) (*xls.WorkSheet, error) {
 	}
 
 	// open xls file
-	fromXlsFile, err := xls.Open(fromXlsPath, "utf-8")
+	fromXlsFile, err := xls.OpenFile(fromXlsPath)
 	if err != nil {
 		return nil, err
 	}
-	fromXlsSheet := fromXlsFile.GetSheet(0)
+	fromXlsSheet, err := fromXlsFile.GetSheet(0)
 	return fromXlsSheet, nil
 }
 
-func dataCopy(fromXlsSheet *xls.WorkSheet, toXlsxSheet *xlsx.Sheet) error {
-	for i := 0; i < int(fromXlsSheet.MaxRow); i++ {
-		fromXlsRow := fromXlsSheet.Row(i)
-		rowColCount := fromXlsRow.LastCol()
-		insertRowFrom(fromXlsRow, toXlsxSheet, rowColCount)
+func dataCopy(fromXlsSheet *xls.Sheet, toXlsxSheet *xlsx.Sheet) error {
+	for i := 0; i < int(fromXlsSheet.GetNumberRows()); i++ {
+		fromXlsRow, err := fromXlsSheet.GetRow(i)
+		if err != nil {
+			return err
+		}
+		rowCols := fromXlsRow.GetCols()
+		insertRowFrom(toXlsxSheet, rowCols)
 	}
 	return nil
 }
 
-func insertRowFrom(fromXlsRow *xls.Row, toXlsxSheet *xlsx.Sheet, rowColCount int) {
+func insertRowFrom(toXlsxSheet *xlsx.Sheet, rowCols []structure.CellData) {
+
 	row := toXlsxSheet.AddRow()
-	for i := 0; i < rowColCount; i++ {
+	for _, col := range rowCols {
 		cell := row.AddCell()
-		cell.Value = fromXlsRow.Col(i)
+		cell.Value = col.GetString()
 	}
 }
 

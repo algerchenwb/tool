@@ -3,8 +3,11 @@ module tools
 go 1.18
 
 require (
-	github.com/extrame/xls v0.0.1
+	github.com/shakinm/xlsReader v0.9.11
 	github.com/tealeg/xlsx v1.0.5
 )
 
-require github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
+require (
+	github.com/metakeule/fmtdate v1.1.2 // indirect
+	golang.org/x/text v0.3.2 // indirect
+)
