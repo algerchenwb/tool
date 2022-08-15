@@ -6,10 +6,11 @@ import (
 	"github.com/tealeg/xlsx"
 	"os"
 	"strings"
+	"time"
 )
 
 func Example(fromXlsPath string, toXlsxPath string) {
-	xlsFile, _, err := Xls2Xlsx(fromXlsPath, toXlsxPath)
+	xlsFile, deleteFun, err := Xls2Xlsx(fromXlsPath, toXlsxPath)
 	if err != nil {
 		fmt.Printf("err is %v", err)
 		return
@@ -26,12 +27,12 @@ func Example(fromXlsPath string, toXlsxPath string) {
 			}
 		}
 	}
-	//time.Sleep(5 * time.Second)
-	//err = deleteFun()
-	//if err != nil {
-	//	fmt.Printf("err is %v", err)
-	//	return
-	//}
+	time.Sleep(5 * time.Second)
+	err = deleteFun()
+	if err != nil {
+		fmt.Printf("err is %v", err)
+		return
+	}
 }
 
 func Xls2Xlsx(fromXlsPath string, toXlsxPath string) (*xlsx.File, func() error, error) { // 打開xls文件
